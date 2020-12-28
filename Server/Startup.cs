@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using System.Linq;
 using BlazorSignalRApp.Server.Hubs;
 using Serilog;
+using Serilog.Formatting.Compact;
 
 namespace BlazorSignalRApp.Server
 {
@@ -16,10 +16,13 @@ namespace BlazorSignalRApp.Server
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            //Log.Logger = new LoggerConfiguration()
+            //      .Enrich.FromLogContext()
+            //      .WriteTo.Console()
+            //      .CreateLogger();
             Log.Logger = new LoggerConfiguration()
-                  .Enrich.FromLogContext()
-                  .WriteTo.Console()
-                  .CreateLogger();
+              .WriteTo.File(new CompactJsonFormatter(), "./logs/myapp.json")
+              .CreateLogger();
         }
 
         public IConfiguration Configuration { get; }

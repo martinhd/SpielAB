@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using BlazorSignalRApp.Server.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -11,13 +12,13 @@ namespace BlazorSignalRApp.Server
     {
         private int executionCount = 0;
         private readonly ILogger<TimedHostedService> _logger;
-        private readonly TimeHub _timeHub;
+        private readonly IHubContext<TimeHub> _timeHubContext;
         private Timer _timer;
 
-        public TimedHostedService(ILogger<TimedHostedService> logger, TimeHub th)
+        public TimedHostedService(ILogger<TimedHostedService> logger, IHubContext<TimeHub> thc)
         {
             _logger = logger;
-            _timeHub = th;
+            _timeHubContext = thc;
         }
 
         public override async Task StartAsync(CancellationToken stoppingToken)
@@ -33,7 +34,7 @@ namespace BlazorSignalRApp.Server
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _timeHub.SendMessage(executionCount);
+                await _timeHubContext.Clients.All.SendAsync("ReceiveMessage", executionCount);
                 await Task.Delay(1000, stoppingToken);
             }
         }
