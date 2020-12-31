@@ -1,4 +1,7 @@
 @inherits LayoutComponentBase
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +10,7 @@
 
     <div class="main">
         <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+            @count
         </div>
 
         <div class="content px-4">
@@ -15,3 +18,29 @@
         </div>
     </div>
 </div>
+
+@code {
+    private HubConnection timeHubConnection;
+    private string count = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        timeHubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/timehub"))
+            .Build();
+
+        timeHubConnection.On<int>("ReceiveMessage", (cnt) =>
+            {
+                string encodedMsg = $"time: {cnt}";
+                count = encodedMsg;
+                StateHasChanged();
+            });
+
+        await timeHubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await timeHubConnection.DisposeAsync();
+    }
+}

@@ -1,0 +1,10 @@
+﻿@page "/user/{Team}/{Player}"
+<h3>User</h3>
+team: @Team player: @Player 
+@code {
+    [Parameter]
+    public string Team { get; set; }
+
+    [Parameter]
+    public string Player { get; set; }
+}

@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
+@inject HttpClient Http
 @implements IAsyncDisposable
 
 <div class="form-group">
@@ -15,62 +16,61 @@
         <input @bind="messageInput" size="50" />
     </label>
 </div>
-<button @onclick="Send" disabled="@(!IsConnected)">Send</button>
+@*<button @onclick="Send" disabled="@(!IsConnected)">Send</button>*@
 
 <hr>
-count
-<ul id="messagesList">
-    @foreach (var message in messages)
-    {
-        <li>@message</li>
-    }
-</ul>
+@count
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Player</th>
+            <th>Team</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var playerKey in players.Keys)
+        {
+            <tr>
+                <td>@playerKey</td>
+                <td>@players[playerKey]</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
-    private HubConnection chatHubConnection;
     private HubConnection timeHubConnection;
     private List<string> messages = new List<string>();
     private string userInput;
     private string messageInput;
-    private string count;
+    private string count = "";
+
+    private Dictionary<string, string> players = new Dictionary<string, string>();
 
     protected override async Task OnInitializedAsync()
     {
-        chatHubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
-            .Build();
-
-        chatHubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-            {
-            var encodedMsg = $"{user}: {message}";
-            messages.Add(encodedMsg);
-            StateHasChanged();
-        });
-
-        await chatHubConnection.StartAsync();
-
         timeHubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/timehub"))
             .Build();
 
         timeHubConnection.On<int>("ReceiveMessage", (cnt) =>
-            {
+        {
             string encodedMsg = $"time: {cnt}";
             count = encodedMsg;
             StateHasChanged();
         });
 
         await timeHubConnection.StartAsync();
+
+        players = await Http.GetFromJsonAsync<Dictionary<string, string>>("GetUsers");
     }
 
-    Task Send() =>
-        chatHubConnection.SendAsync("SendMessage", userInput, messageInput);
-
     public bool IsConnected =>
-        chatHubConnection.State == HubConnectionState.Connected;
+        timeHubConnection.State == HubConnectionState.Connected;
 
     public async ValueTask DisposeAsync()
     {
-        await chatHubConnection.DisposeAsync();
+        await timeHubConnection.DisposeAsync();
     }
 }

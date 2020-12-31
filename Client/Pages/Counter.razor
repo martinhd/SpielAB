@@ -1,16 +1,55 @@
 @page "/counter"
+@inject HttpClient Http
 
-<h1>Counter</h1>
+<h1>Create new player</h1>
 
-<p>Current count: @currentCount</p>
+<div class="form-group">
+    <label>
+        Player:
+        <input @bind="player" />
+    </label>
+    <br />
+    <label>
+        Team:
+        <input @bind="team" />
+    </label>
+</div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="CreateUser" disabled=@buttonDisabled>Create</button>
 
 @code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
+    private string _player;
+    public string player
     {
-        currentCount++;
+        get { return _player; }
+        set
+        {
+            _player = value;
+            CheckChanged();
+        }
+    }
+
+    private string _team;
+    public string team
+    {
+        get { return _team; }
+        set
+        {
+            _team = value;
+            CheckChanged();
+        }
+    }
+    public bool buttonDisabled = true;
+
+    private void CheckChanged()
+    {
+        if (player != null && team!=null && player.Length > 0 && team.Length > 0)
+            buttonDisabled = false;
+        else buttonDisabled = true;
+    }
+
+
+    private void CreateUser()
+    {
     }
 }

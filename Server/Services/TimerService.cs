@@ -61,5 +61,10 @@ namespace BlazorSignalRApp.Server
             _logger.LogInformation("Timed Hosted Service Reset to 0.");
             executionCount = 0;
         }
+
+        public int GetTimer()
+        {
+            return executionCount;
+        }
     }
 }

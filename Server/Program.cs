@@ -28,6 +28,7 @@ namespace BlazorSignalRApp.Server
                 {
                     services.AddLogging(loggingBuilder =>	loggingBuilder.AddSerilog(dispose: true));
                     services.AddHostedService<TimedHostedService>();
+                    services.AddSingleton<IGameService, GameService>();
                 });
     }
 }
