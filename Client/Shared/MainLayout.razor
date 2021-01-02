@@ -8,8 +8,8 @@
         <NavMenu />
     </div>
 
-    <div class="main">
-        <div class="top-row px-4">
+    <div class="main" >
+        <div class="top-row px-4"  style="background-color:@bgcolor">
             @count
         </div>
 
@@ -22,6 +22,7 @@
 @code {
     private HubConnection timeHubConnection;
     private string count = "";
+    private string bgcolor = "lightgreen";
 
     protected override async Task OnInitializedAsync()
     {
@@ -30,11 +31,14 @@
             .Build();
 
         timeHubConnection.On<int>("ReceiveMessage", (cnt) =>
-            {
-                string encodedMsg = $"time: {cnt}";
-                count = encodedMsg;
-                StateHasChanged();
-            });
+        {
+            string encodedMsg = $"time: {cnt}";
+            count = encodedMsg;
+            if (cnt > 60)
+                bgcolor = "red";
+            else bgcolor = "lightgreen";
+            StateHasChanged();
+        });
 
         await timeHubConnection.StartAsync();
     }

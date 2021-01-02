@@ -1,0 +1,20 @@
+[
+    {
+        "Type": "Drawing",
+        "KeyWord": "hugo",
+        "Taboos": [
+            "Bernd",
+            "Egon",
+            "Sam"
+        ]
+    },
+    {
+        "Type": "Pantomime",
+        "KeyWord": "Löwe",
+        "Taboos": [
+            "Hund",
+            "Esel",
+            "Ameise"
+        ]
+    }
+]

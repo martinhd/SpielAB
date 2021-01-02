@@ -2,13 +2,15 @@
 
 namespace BlazorSignalRApp.Shared
 {
-    public enum TaskType { Question,Pantomime,Drawing}
     public class SpielTask
     {
-        public TaskType Type;
-        public string KeyWord;
-        public string Team;
-        public string Player;
-        public List<string> taboos = new List<string>();
+        /// <summary>
+        /// Question,Pantomime,Drawing
+        /// </summary>
+        public string Type { get; set; }
+        public string KeyWord { get; set; }
+        public string Team { get; set; }
+        public string Player { get; set; }
+        public List<string> Taboos { get; set; }  = new List<string>();
     }
 }

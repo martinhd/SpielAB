@@ -19,9 +19,10 @@ namespace BlazorSignalRApp.Server.Controllers
 
         [HttpGet]
         [Route("CreateUser/{Team}/{Player}")]
-        public void CreateUser(string Team,string Player)
+        public bool CreateUser(string Team,string Player)
         {
             _gameService.AddPlayer(Team, Player);
+            return true;
         }
 
 
