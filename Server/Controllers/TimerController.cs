@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using BlazorSignalRApp.Shared;
+using Microsoft.Extensions.Hosting;
 
 namespace BlazorSignalRApp.Server.Controllers
 {
@@ -12,26 +13,27 @@ namespace BlazorSignalRApp.Server.Controllers
     public class TimerController : ControllerBase
     {
         private readonly ILogger<TimerController> _logger;
-        private readonly TimedHostedService _timer;
+        private readonly ITimerService _timer;
 
-        public TimerController(ILogger<TimerController> logger,TimedHostedService timer)
+        public TimerController(ILogger<TimerController> logger, ITimerService timer)
         {
             _logger = logger;
-            _timer = timer;
+            _timer  = timer;
         }
 
         [HttpGet]
-        [Route("Timer")]
+        [Route("Api/Timer")]
         public int Get()
         {
-            return 42;
+            return _timer.GetTimer();
         }
 
         [HttpGet]
-        [Route("Timer/Reset")]
-        public void Reset()
+        [Route("Api/Timer/Reset")]
+        public bool Reset()
         {
             _timer.Reset();
+            return true;
         }
     }
 }

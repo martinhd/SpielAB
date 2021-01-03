@@ -1,20 +1,68 @@
 [
-    {
-        "Type": "Drawing",
-        "KeyWord": "hugo",
-        "Taboos": [
-            "Bernd",
-            "Egon",
-            "Sam"
-        ]
-    },
-    {
-        "Type": "Pantomime",
-        "KeyWord": "Löwe",
-        "Taboos": [
-            "Hund",
-            "Esel",
-            "Ameise"
-        ]
-    }
+  {
+    "Type": "Question",
+    "KeyWord": "Pirat",
+    "Taboos": [
+      "Insel",
+      "Schatz",
+      "Augenklappe",
+      "Totenkopf",
+      "Schiff"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Gewürz",
+    "Taboos": [
+      "Geruch",
+      "Geschmack",
+      "Curry",
+      "Pfeffer",
+      "Essen"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Rum",
+    "Taboos": [
+      "Getränk",
+      "Flasche",
+      "Glas",
+      "Alkohol",
+      "braun"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Batterie",
+    "Taboos": [
+      "Strom",
+      "Akku",
+      "Elektrizität",
+      "Gerät",
+      "leer"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Gedächtnis",
+    "Taboos": [
+      "Alzheimer",
+      "vergessen",
+      "merken",
+      "Kopf",
+      "Gehirn"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Palme",
+    "Taboos": [
+      "Baum",
+      "Tropen",
+      "Kokusnuss",
+      "Wedel",
+      "Karibik"
+    ]
+  }
 ]

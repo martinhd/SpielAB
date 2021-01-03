@@ -18,7 +18,7 @@ namespace BlazorSignalRApp.Server.Controllers
         }
 
         [HttpGet]
-        [Route("CreateUser/{Team}/{Player}")]
+        [Route("Api/CreateUser/{Team}/{Player}")]
         public bool CreateUser(string Team,string Player)
         {
             _gameService.AddPlayer(Team, Player);
@@ -27,7 +27,7 @@ namespace BlazorSignalRApp.Server.Controllers
 
 
         [HttpGet]
-        [Route("GetUsers")]
+        [Route("Api/GetUsers")]
         public Dictionary<string,string> GetUsers()
         {
             return _gameService.GetPlayers();

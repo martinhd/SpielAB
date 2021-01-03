@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text.Json;
 using BlazorSignalRApp.Shared;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR;
+using BlazorSignalRApp.Server.Hubs;
 
 namespace BlazorSignalRApp.Server
 {
@@ -12,19 +15,26 @@ namespace BlazorSignalRApp.Server
     {
         public void AddPlayer(string team, string name);
         public Dictionary<string, string> GetPlayers();
+        public SpielTask GetNextTask();
+        public string GetNextPlayer();
     }
 
 
     public class GameService : IGameService
     {
+        private string _currentTeam=null;
+        private string _currentPlayer=null;
         private readonly ILogger<GameService> _logger;
         private Dictionary<string, string> _player2TeamMap = new Dictionary<string, string>();
+        private Dictionary<string, string> _team2lastPlayerMap = new Dictionary<string, string>();
         private Dictionary<string, int> _team2ScoreMap = new Dictionary<string, int>();
         List<SpielTask> _tasks;
+        private readonly IHubContext<SpielTaskHub> _spielTaskHubContext;
 
-        public GameService(ILogger<GameService> logger)
+        public GameService(ILogger<GameService> logger, IHubContext<SpielTaskHub> sth)
         {
             _logger = logger;
+            _spielTaskHubContext = sth;
             try
             {
                 var jsonString = File.ReadAllText("tasks.json");
@@ -37,6 +47,66 @@ namespace BlazorSignalRApp.Server
             }
         }
 
+        public SpielTask GetNextTask()
+        {
+            var freeTasks = _tasks.Where(t => t.Player == null && t.Type=="Question").ToList();
+            if(freeTasks.Count>0 && _currentTeam!=null && _currentPlayer!=null)
+            {
+                var task = freeTasks.First();
+                task.Player = _currentPlayer;
+                task.Team = _currentTeam;
+                _spielTaskHubContext.Clients.All.SendAsync("ReceiveMessage", task);
+                return task;
+            }
+            return null;
+        }
+
+        // Switches to the next team and the next player. Starts with first team/player if at the end
+        public string GetNextPlayer()
+        {
+            try
+            {
+                var teams = _player2TeamMap.Values.Distinct().ToList();
+                if (teams.Count < 2) //we need two teams minimum
+                    return "";
+
+                if (_currentTeam == null)
+                {
+                    _currentTeam = teams.First();
+                }
+                else
+                {
+                    int pos = teams.IndexOf(_currentTeam);
+                    if (pos == teams.Count-1)
+                        _currentTeam = teams[0];
+                    else _currentTeam = teams[pos + 1];
+                }
+                var players = _player2TeamMap.Where(p => p.Value == _currentTeam).Select(p => p.Key).ToList();
+                if (_currentPlayer == null)
+                {
+                    _currentPlayer = players.First();
+                }
+                else
+                {
+                    if (_team2lastPlayerMap.ContainsKey(_currentTeam))
+                    {
+                        string lastplayer = _team2lastPlayerMap[_currentTeam];
+                        int pos = players.IndexOf(lastplayer);
+                        if (pos == players.Count-1)
+                            _currentPlayer = players[0];
+                        else _currentPlayer = players[pos + 1];
+                    }
+                    else _currentPlayer = players[0];
+                }
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, "GetNextPlayer");
+                throw;
+            }
+            _team2lastPlayerMap[_currentTeam] = _currentPlayer;
+            return _currentPlayer;
+        }
 
         public void AddPlayer(string team,string name)
         {

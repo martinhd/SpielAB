@@ -1,13 +1,14 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.SignalR.Client
+@using BlazorSignalRApp.Shared
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
-@implements IAsyncDisposable
 
-@*<button @onclick="Send" disabled="@(!IsConnected)">Send</button>*@
+
+<button @onclick="StartGame">Start game</button>
 
 <hr>
-@count
+@currentPlayer, @currentTask.Team
 
 <table class="table">
     <thead>
@@ -28,37 +29,20 @@
 </table>
 
 @code {
-    private HubConnection timeHubConnection;
-    private List<string> messages = new List<string>();
-    private string userInput;
-    private string messageInput;
-    private string count = "";
-
     private Dictionary<string, string> players = new Dictionary<string, string>();
+    private string currentPlayer = "";
+    private SpielTask currentTask = new SpielTask();
 
     protected override async Task OnInitializedAsync()
     {
-        timeHubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/timehub"))
-            .Build();
-
-        timeHubConnection.On<int>("ReceiveMessage", (cnt) =>
-        {
-            string encodedMsg = $"time: {cnt}";
-            count = encodedMsg;
-            StateHasChanged();
-        });
-
-        await timeHubConnection.StartAsync();
-
-        players = await Http.GetFromJsonAsync<Dictionary<string, string>>("GetUsers");
+        players = await Http.GetFromJsonAsync<Dictionary<string, string>>("Api/GetUsers");
     }
 
-    public bool IsConnected =>
-        timeHubConnection.State == HubConnectionState.Connected;
-
-    public async ValueTask DisposeAsync()
+    private async void StartGame()
     {
-        await timeHubConnection.DisposeAsync();
+        await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
+        currentPlayer = await Http.GetStringAsync("Api/NextPlayer");
+        currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
+        StateHasChanged();
     }
 }

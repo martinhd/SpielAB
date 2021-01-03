@@ -52,7 +52,7 @@
 
     private void CreateUser()
     {
-        Http.GetFromJsonAsync<bool>("CreateUser/" + _team.ToUpper() + "/" + _player);
+        Http.GetFromJsonAsync<bool>("Api/CreateUser/" + _team.ToUpper() + "/" + _player);
         NavManager.NavigateTo("user/" + _team.ToUpper() + "/" + _player);
     }
 }

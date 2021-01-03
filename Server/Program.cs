@@ -27,7 +27,8 @@ namespace BlazorSignalRApp.Server
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddLogging(loggingBuilder =>	loggingBuilder.AddSerilog(dispose: true));
-                    services.AddHostedService<TimedHostedService>();
+                    //services.AddHostedService<TimedHostedService>();
+                    services.AddSingleton<ITimerService, Timerservice>();
                     services.AddSingleton<IGameService, GameService>();
                 });
     }

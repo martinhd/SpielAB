@@ -21,7 +21,7 @@ namespace BlazorSignalRApp.Server
             //      .WriteTo.Console()
             //      .CreateLogger();
             Log.Logger = new LoggerConfiguration()
-              .WriteTo.File(new CompactJsonFormatter(), "./logs/myapp.json")
+              .WriteTo.File(new CompactJsonFormatter(), "./logs/log_spielAB.json")
               .CreateLogger();
         }
 
@@ -67,7 +67,7 @@ namespace BlazorSignalRApp.Server
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
-                endpoints.MapHub<ChatHub>("/chathub");
+                endpoints.MapHub<SpielTaskHub>("/spieltaskhub");
                 endpoints.MapHub<TimeHub>("/timehub");
                 endpoints.MapFallbackToFile("index.html");
             });

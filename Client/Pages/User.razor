@@ -1,10 +1,59 @@
 ﻿@page "/user/{Team}/{Player}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using BlazorSignalRApp.Shared
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@implements IAsyncDisposable
+
+
 <h3>User</h3>
-team: @Team player: @Player 
+team: @Team player: @Player
+<br />
+
+<button @onclick="CorrectAnswer" disabled="@(IsActiveTeam)">Correct Answer</button>
+
+@currentTask.KeyWord
+
 @code {
     [Parameter]
     public string Team { get; set; }
 
     [Parameter]
     public string Player { get; set; }
+
+    public bool IsActiveTeam = true;
+
+    private HubConnection taskHubConnection;
+
+    private SpielTask currentTask = new SpielTask();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        taskHubConnection = new HubConnectionBuilder()
+        .WithUrl(NavManager.ToAbsoluteUri("/spieltaskhub"))
+        .Build();
+
+        taskHubConnection.On<SpielTask>("ReceiveMessage", (task) =>
+        {
+            currentTask = task;
+            if (Team == task.Team)
+                IsActiveTeam = true;
+            else IsActiveTeam = false;
+
+            StateHasChanged();
+        });
+
+        await taskHubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await taskHubConnection.DisposeAsync();
+    }
+
+    private void CorrectAnswer()
+    {
+
+    }
 }
