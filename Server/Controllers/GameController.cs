@@ -27,5 +27,12 @@ namespace BlazorSignalRApp.Server.Controllers
         {
             return _gameService.GetNextTask();
         }
+
+        [HttpGet]
+        [Route("Api/CurrentTask")]
+        public SpielTask CurrentTask()
+        {
+            return _gameService.GetCurrentTask();
+        }
     }
 }

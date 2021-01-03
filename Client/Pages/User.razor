@@ -6,13 +6,32 @@
 @implements IAsyncDisposable
 
 
-<h3>User</h3>
-team: @Team player: @Player
+<h3>
+    team: @Team     player: @Player
+</h3>
 <br />
 
 <button @onclick="CorrectAnswer" disabled="@(IsActiveTeam)">Correct Answer</button>
+<button @onclick="WrongAnswer" disabled="@(IsActiveTeam)">Wrong Answer</button>
+<br/>
 
-@currentTask.KeyWord
+<div  style="@taskhidden">@currentTask.KeyWord</div>
+
+<table class="table" style="@taskhidden">
+    <thead>
+        <tr>
+            <th>taboo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var taboo in currentTask.Taboos)
+        {
+            <tr>
+                <td>@taboo</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
     [Parameter]
@@ -27,12 +46,16 @@ team: @Team player: @Player
 
     private SpielTask currentTask = new SpielTask();
 
+    private string taskhidden = "visibility:hidden";
+
 
     protected override async Task OnInitializedAsync()
     {
+        currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/CurrentTask");
+
         taskHubConnection = new HubConnectionBuilder()
-        .WithUrl(NavManager.ToAbsoluteUri("/spieltaskhub"))
-        .Build();
+           .WithUrl(NavManager.ToAbsoluteUri("/spieltaskhub"))
+           .Build();
 
         taskHubConnection.On<SpielTask>("ReceiveMessage", (task) =>
         {
@@ -41,6 +64,11 @@ team: @Team player: @Player
                 IsActiveTeam = true;
             else IsActiveTeam = false;
 
+            if(IsActiveTeam && Player!=task.Player)
+                taskhidden = "visibility:hidden";
+            else taskhidden = "";
+
+            
             StateHasChanged();
         });
 
@@ -52,8 +80,15 @@ team: @Team player: @Player
         await taskHubConnection.DisposeAsync();
     }
 
-    private void CorrectAnswer()
+    private async void CorrectAnswer()
     {
+        currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
+        StateHasChanged();
+    }
 
+    private async void WrongAnswer()
+    {
+        currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
+        StateHasChanged();
     }
 }

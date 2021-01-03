@@ -16,19 +16,21 @@ namespace BlazorSignalRApp.Server
         public void AddPlayer(string team, string name);
         public Dictionary<string, string> GetPlayers();
         public SpielTask GetNextTask();
+        public SpielTask GetCurrentTask();
         public string GetNextPlayer();
     }
 
 
     public class GameService : IGameService
     {
-        private string _currentTeam=null;
-        private string _currentPlayer=null;
+        private string _currentTeam = null;
+        private string _currentPlayer = null;
         private readonly ILogger<GameService> _logger;
         private Dictionary<string, string> _player2TeamMap = new Dictionary<string, string>();
         private Dictionary<string, string> _team2lastPlayerMap = new Dictionary<string, string>();
         private Dictionary<string, int> _team2ScoreMap = new Dictionary<string, int>();
-        List<SpielTask> _tasks;
+        private List<SpielTask> _tasks;
+        private SpielTask _currentTask = new SpielTask();
         private readonly IHubContext<SpielTaskHub> _spielTaskHubContext;
 
         public GameService(ILogger<GameService> logger, IHubContext<SpielTaskHub> sth)
@@ -40,7 +42,7 @@ namespace BlazorSignalRApp.Server
                 var jsonString = File.ReadAllText("tasks.json");
                 _tasks = JsonSerializer.Deserialize<List<SpielTask>>(jsonString);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e, "Error while reading json config file");
                 throw;
@@ -49,16 +51,22 @@ namespace BlazorSignalRApp.Server
 
         public SpielTask GetNextTask()
         {
-            var freeTasks = _tasks.Where(t => t.Player == null && t.Type=="Question").ToList();
-            if(freeTasks.Count>0 && _currentTeam!=null && _currentPlayer!=null)
+            var freeTasks = _tasks.Where(t => t.Player == null && t.Type == "Question").ToList();
+            if (freeTasks.Count > 0 && _currentTeam != null && _currentPlayer != null)
             {
                 var task = freeTasks.First();
                 task.Player = _currentPlayer;
                 task.Team = _currentTeam;
                 _spielTaskHubContext.Clients.All.SendAsync("ReceiveMessage", task);
+                _currentTask = task;
                 return task;
             }
             return null;
+        }
+
+        public SpielTask GetCurrentTask()
+        {
+            return _currentTask;
         }
 
         // Switches to the next team and the next player. Starts with first team/player if at the end
@@ -77,7 +85,7 @@ namespace BlazorSignalRApp.Server
                 else
                 {
                     int pos = teams.IndexOf(_currentTeam);
-                    if (pos == teams.Count-1)
+                    if (pos == teams.Count - 1)
                         _currentTeam = teams[0];
                     else _currentTeam = teams[pos + 1];
                 }
@@ -92,14 +100,14 @@ namespace BlazorSignalRApp.Server
                     {
                         string lastplayer = _team2lastPlayerMap[_currentTeam];
                         int pos = players.IndexOf(lastplayer);
-                        if (pos == players.Count-1)
+                        if (pos == players.Count - 1)
                             _currentPlayer = players[0];
                         else _currentPlayer = players[pos + 1];
                     }
                     else _currentPlayer = players[0];
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e, "GetNextPlayer");
                 throw;
@@ -108,12 +116,12 @@ namespace BlazorSignalRApp.Server
             return _currentPlayer;
         }
 
-        public void AddPlayer(string team,string name)
+        public void AddPlayer(string team, string name)
         {
             _player2TeamMap[name] = team;
         }
 
-        public Dictionary<string,string> GetPlayers()
+        public Dictionary<string, string> GetPlayers()
         {
             return _player2TeamMap;
         }
