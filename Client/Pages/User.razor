@@ -105,11 +105,13 @@
     private async void CorrectAnswer()
     {
         await Http.GetFromJsonAsync<bool>("Api/ScoreTask?score=1");
-        if(count>60)
+        if (count > 60)
+        {
             await Http.GetStringAsync("Api/NextPlayer");
+            await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
+        }
 
         currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
-        await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
 
         StateHasChanged();
     }
@@ -118,10 +120,12 @@
     {
         await Http.GetFromJsonAsync<bool>("Api/ScoreTask?score=0");
         if (count > 60)
+        {
             await Http.GetStringAsync("Api/NextPlayer");
+            await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
+        }
 
         currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
-        await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
 
         StateHasChanged();
     }

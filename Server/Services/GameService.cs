@@ -24,6 +24,8 @@ namespace BlazorSignalRApp.Server
 
     public class GameService : IGameService
     {
+        static Random rnd = new Random();
+
         private string _currentTeam = null;
         private string _currentPlayer = null;
         private readonly ILogger<GameService> _logger;
@@ -57,7 +59,8 @@ namespace BlazorSignalRApp.Server
                 var freeTasks = _tasks.Where(t => t.Player == null && t.Type == "Question").ToList();
                 if (freeTasks.Count > 0 && _currentTeam != null && _currentPlayer != null)
                 {
-                    var task = freeTasks.First();
+                    int r = rnd.Next(freeTasks.Count);
+                    var task = freeTasks[r];
                     task.Player = _currentPlayer;
                     task.Team = _currentTeam;
                     _logger.LogInformation($"TaskHub sending new task {task.KeyWord} for player: {task.Player} in team: {task.Team}");
