@@ -12,5 +12,6 @@ namespace BlazorSignalRApp.Shared
         public string Team { get; set; }
         public string Player { get; set; }
         public List<string> Taboos { get; set; }  = new List<string>();
+        public int Score { get; set; } = -1;
     }
 }

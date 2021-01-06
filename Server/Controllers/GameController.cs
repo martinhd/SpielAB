@@ -34,5 +34,13 @@ namespace BlazorSignalRApp.Server.Controllers
         {
             return _gameService.GetCurrentTask();
         }
+
+
+        [HttpGet]
+        [Route("Api/ScoreTask")]
+        public bool ScoreCurrentTask(int score)
+        {
+            return _gameService.ScoreCurrentTask(score);
+        }
     }
 }

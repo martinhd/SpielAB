@@ -15,6 +15,9 @@
 <button @onclick="WrongAnswer" disabled="@(IsActiveTeam)">Wrong Answer</button>
 <br/>
 
+<div style="@performhidden">Please perform @currentTask.Type for the other members of your team</div>
+<br/>
+<br/>
 <div  style="@taskhidden">@currentTask.KeyWord</div>
 
 <table class="table" style="@taskhidden">
@@ -43,14 +46,26 @@
     public bool IsActiveTeam = true;
 
     private HubConnection taskHubConnection;
+    private HubConnection timeHubConnection;
+    private int count = 0;
 
     private SpielTask currentTask = new SpielTask();
 
     private string taskhidden = "visibility:hidden";
+    private string performhidden = "visibility:hidden";
 
 
     protected override async Task OnInitializedAsync()
     {
+        timeHubConnection = new HubConnectionBuilder()
+        .WithUrl(NavManager.ToAbsoluteUri("/timehub"))
+        .Build();
+
+        timeHubConnection.On<int>("ReceiveMessage", (cnt) =>
+        {
+            count = cnt;
+        });
+
         currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/CurrentTask");
 
         taskHubConnection = new HubConnectionBuilder()
@@ -60,35 +75,54 @@
         taskHubConnection.On<SpielTask>("ReceiveMessage", (task) =>
         {
             currentTask = task;
+            performhidden = "visibility:hidden";
             if (Team == task.Team)
                 IsActiveTeam = true;
             else IsActiveTeam = false;
 
-            if(IsActiveTeam && Player!=task.Player)
+            if (IsActiveTeam && Player != task.Player)
+            {
                 taskhidden = "visibility:hidden";
+            }
             else taskhidden = "";
 
-            
+            if (IsActiveTeam && Player == task.Player)
+                performhidden = "";
+
             StateHasChanged();
         });
 
         await taskHubConnection.StartAsync();
+        await timeHubConnection.StartAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
         await taskHubConnection.DisposeAsync();
+        await timeHubConnection.DisposeAsync();
     }
 
     private async void CorrectAnswer()
     {
+        await Http.GetFromJsonAsync<bool>("Api/ScoreTask?score=1");
+        if(count>60)
+            await Http.GetStringAsync("Api/NextPlayer");
+
         currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
+        await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
+
         StateHasChanged();
     }
 
     private async void WrongAnswer()
     {
+        await Http.GetFromJsonAsync<bool>("Api/ScoreTask?score=0");
+        if (count > 60)
+            await Http.GetStringAsync("Api/NextPlayer");
+
         currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
+        await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
+
         StateHasChanged();
     }
 }

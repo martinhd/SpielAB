@@ -18,6 +18,7 @@ namespace BlazorSignalRApp.Server
         public SpielTask GetNextTask();
         public SpielTask GetCurrentTask();
         public string GetNextPlayer();
+        public bool ScoreCurrentTask(int score);
     }
 
 
@@ -51,17 +52,26 @@ namespace BlazorSignalRApp.Server
 
         public SpielTask GetNextTask()
         {
-            var freeTasks = _tasks.Where(t => t.Player == null && t.Type == "Question").ToList();
-            if (freeTasks.Count > 0 && _currentTeam != null && _currentPlayer != null)
+            try
             {
-                var task = freeTasks.First();
-                task.Player = _currentPlayer;
-                task.Team = _currentTeam;
-                _spielTaskHubContext.Clients.All.SendAsync("ReceiveMessage", task);
-                _currentTask = task;
-                return task;
+                var freeTasks = _tasks.Where(t => t.Player == null && t.Type == "Question").ToList();
+                if (freeTasks.Count > 0 && _currentTeam != null && _currentPlayer != null)
+                {
+                    var task = freeTasks.First();
+                    task.Player = _currentPlayer;
+                    task.Team = _currentTeam;
+                    _logger.LogInformation($"TaskHub sending new task {task.KeyWord} for player: {task.Player} in team: {task.Team}");
+                    _spielTaskHubContext.Clients.All.SendAsync("ReceiveMessage", task);
+                    _currentTask = task;
+                    return task;
+                }
+                return null;
             }
-            return null;
+            catch (Exception e)
+            {
+                _logger.LogError(e, "GetNextTask");
+                throw;
+            }
         }
 
         public SpielTask GetCurrentTask()
@@ -113,6 +123,7 @@ namespace BlazorSignalRApp.Server
                 throw;
             }
             _team2lastPlayerMap[_currentTeam] = _currentPlayer;
+            _logger.LogInformation($"Set next player to: {_currentPlayer}");
             return _currentPlayer;
         }
 
@@ -142,6 +153,25 @@ namespace BlazorSignalRApp.Server
         public Dictionary<string, int> GetScores()
         {
             return _team2ScoreMap;
+        }
+
+        public bool ScoreCurrentTask(int score)
+        {
+            try
+            {
+                if (_currentTask.Score == -1)  // no score available so far (first score wins)
+                {
+                    _currentTask.Score = score;
+                    if (score == 1)
+                        AddScore(_currentTeam);
+                }
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, "ScoreCurrentTask");
+                throw;
+            }
+            return true;
         }
     }
 }

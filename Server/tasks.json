@@ -64,5 +64,71 @@
       "Wedel",
       "Karibik"
     ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Maus",
+    "Taboos": [
+      "Tier",
+      "Ratte",
+      "Elefant",
+      "Sendung",
+      "Käse"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Buch",
+    "Taboos": [
+      "Papier",
+      "lesen",
+      "Seite",
+      "schreiben",
+      "Autor"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Regen",
+    "Taboos": [
+      "Schirm",
+      "nass",
+      "Tropfen",
+      "Wolke",
+      "Himmel"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Bart",
+    "Taboos": [
+      "rasieren",
+      "Pirat",
+      "Tage",
+      "Rasierer",
+      "Kopf"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Geld",
+    "Taboos": [
+      "Schein",
+      "Münze",
+      "Börse",
+      "bezahlen",
+      "Kasse"
+    ]
+  },
+  {
+    "Type": "Question",
+    "KeyWord": "Monitor",
+    "Taboos": [
+      "anschauen",
+      "Fernseher",
+      "Computer",
+      "Tisch",
+      "Rechteck"
+    ]
   }
 ]
