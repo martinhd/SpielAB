@@ -7,16 +7,13 @@
 
 
 <h3>
-    team: @Team     player: @Player
+    Team: @Team     Spieler: @Player
 </h3>
 <br />
-
 <button @onclick="CorrectAnswer" disabled="@(IsActiveTeam)">Correct Answer</button>
 <button @onclick="WrongAnswer" disabled="@(IsActiveTeam)">Wrong Answer</button>
 <br/>
-
-<div style="@performhidden">Please perform @currentTask.Type for the other members of your team</div>
-<br/>
+<div style="@performhidden">Du musst fragen (@currentTask.Type)</div>
 <br/>
 <div class="box"  style="@taskhidden">@currentTask.KeyWord</div>
 <br/>
