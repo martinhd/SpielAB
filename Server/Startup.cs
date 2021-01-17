@@ -68,6 +68,7 @@ namespace BlazorSignalRApp.Server
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapHub<SpielTaskHub>("/spieltaskhub");
+                endpoints.MapHub<GameHub>("/gamehub");
                 endpoints.MapHub<TimeHub>("/timehub");
                 endpoints.MapFallbackToFile("index.html");
             });

@@ -3,18 +3,20 @@
 @using BlazorSignalRApp.Shared
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
+@implements IAsyncDisposable
 
 
 <button @onclick="StartGame">Start game</button>
 
 <hr>
-@currentPlayer, @currentTask.Team
+Current player: @currentPlayer from team:  @currentTeam
 
 <table class="table">
     <thead>
         <tr>
             <th>Player</th>
             <th>Team</th>
+            <th>Score</th>
         </tr>
     </thead>
     <tbody>
@@ -23,26 +25,51 @@
             <tr>
                 <td>@playerKey</td>
                 <td>@players[playerKey]</td>
+                <td>@scores[players[playerKey]]</td>
             </tr>
         }
     </tbody>
 </table>
 
+
 @code {
     private Dictionary<string, string> players = new Dictionary<string, string>();
     private string currentPlayer = "";
+    private string currentTeam = "";
     private SpielTask currentTask = new SpielTask();
+    private Dictionary<string, int> scores = new Dictionary<string, int>();
+    private HubConnection gameHubConnection;
 
     protected override async Task OnInitializedAsync()
     {
         players = await Http.GetFromJsonAsync<Dictionary<string, string>>("Api/GetUsers");
+        scores = await Http.GetFromJsonAsync<Dictionary<string, int>>("Api/GetScores");
+
+        gameHubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/gamehub"))
+            .Build();
+
+        gameHubConnection.On<GameStatus>("ReceiveMessage", (gs) =>
+        {
+            currentPlayer = gs.CurrentPlayer;
+            currentTeam = gs.CurrentTeam;
+            scores = gs.Teams2Score;
+            players = gs.Players2Team;
+            StateHasChanged();
+        });
+        await gameHubConnection.StartAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await gameHubConnection.DisposeAsync();
     }
 
     private async void StartGame()
     {
         await Http.GetFromJsonAsync<bool>("Api/Timer/Reset");
-        currentPlayer = await Http.GetStringAsync("Api/NextPlayer");
-        currentTask = await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
-        StateHasChanged();
+        await Http.GetStringAsync("Api/NextPlayer");
+        await Http.GetFromJsonAsync<SpielTask>("Api/NextTask");
+        await Http.GetFromJsonAsync<bool>("Api/ResetGame");
     }
 }

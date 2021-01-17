@@ -37,11 +37,13 @@ namespace BlazorSignalRApp.Server
         private List<SpielTask> _tasks;
         private SpielTask _currentTask = new SpielTask();
         private readonly IHubContext<SpielTaskHub> _spielTaskHubContext;
+        private readonly IHubContext<GameHub> _gameHubContext;
 
-        public GameService(ILogger<GameService> logger, IHubContext<SpielTaskHub> sth)
+        public GameService(ILogger<GameService> logger, IHubContext<SpielTaskHub> sth,IHubContext<GameHub> gh)
         {
             _logger = logger;
             _spielTaskHubContext = sth;
+            _gameHubContext = gh;
             try
             {
                 var jsonString = File.ReadAllText("tasks.json");
@@ -52,6 +54,21 @@ namespace BlazorSignalRApp.Server
                 _logger.LogError(e, "Error while reading json config file");
                 throw;
             }
+        }
+
+        public void SendStatus()
+        {
+            foreach (var team in _player2TeamMap.Values)
+            {
+                if(!_team2ScoreMap.ContainsKey(team))
+                    _team2ScoreMap[team] = 0;
+            }
+            var gs = new GameStatus();
+            gs.Players2Team = _player2TeamMap;
+            gs.Teams2Score = _team2ScoreMap;
+            gs.CurrentTeam = _currentTeam;
+            gs.CurrentPlayer = _currentPlayer;
+            _gameHubContext.Clients.All.SendAsync("ReceiveMessage", gs);
         }
 
 
@@ -85,6 +102,7 @@ namespace BlazorSignalRApp.Server
             return _currentTask;
         }
 
+
         // Switches to the next team and the next player. Starts with first team/player if at the end
         public string GetNextPlayer()
         {
@@ -96,8 +114,8 @@ namespace BlazorSignalRApp.Server
 
                 if (_currentTeam == null)
                 {
-                    _currentTeam = teams.First();
-                }
+                    _currentTeam = _player2TeamMap.Values.First();
+                } 
                 else
                 {
                     int pos = teams.IndexOf(_currentTeam);
@@ -122,6 +140,8 @@ namespace BlazorSignalRApp.Server
                     }
                     else _currentPlayer = players[0];
                 }
+
+                _currentTeam = _player2TeamMap[_currentPlayer];
             }
             catch (Exception e)
             {
@@ -133,9 +153,11 @@ namespace BlazorSignalRApp.Server
             return _currentPlayer;
         }
 
+
         public void AddPlayer(string team, string name)
         {
             _player2TeamMap[name] = team;
+            SendStatus();
         }
 
         public Dictionary<string, string> GetPlayers()
@@ -153,6 +175,7 @@ namespace BlazorSignalRApp.Server
             if (_team2ScoreMap.ContainsKey(team))
                 _team2ScoreMap[team]++;
             else _team2ScoreMap[team] = 1;
+            SendStatus();
             return true;
         }
 
@@ -184,7 +207,12 @@ namespace BlazorSignalRApp.Server
         {
             try
             {
-                _tasks.ForEach(t => { t.Player = null;t.Score = 0; }) ;
+                _tasks.ForEach(t => { t.Player = null;t.Score = -1; }) ;
+                foreach(var team in _player2TeamMap.Values)
+                {
+                    _team2ScoreMap[team] = 0;
+                }
+                SendStatus();
             }
             catch(Exception e)
             {
