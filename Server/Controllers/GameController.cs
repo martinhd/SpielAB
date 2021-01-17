@@ -1,5 +1,6 @@
 ﻿using BlazorSignalRApp.Shared;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace BlazorSignalRApp.Server.Controllers
 {
@@ -35,12 +36,25 @@ namespace BlazorSignalRApp.Server.Controllers
             return _gameService.GetCurrentTask();
         }
 
+        [HttpGet]
+        [Route("Api/GetScores")]
+        public Dictionary<string,int> GetScores()
+        {
+            return _gameService.GetScores();
+        }
 
         [HttpGet]
         [Route("Api/ScoreTask")]
         public bool ScoreCurrentTask(int score)
         {
             return _gameService.ScoreCurrentTask(score);
+        }
+
+        [HttpGet]
+        [Route("Api/ResetGame")]
+        public bool ResetGame()
+        {
+            return _gameService.ResetGame();
         }
     }
 }

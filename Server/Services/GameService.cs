@@ -19,6 +19,8 @@ namespace BlazorSignalRApp.Server
         public SpielTask GetCurrentTask();
         public string GetNextPlayer();
         public bool ScoreCurrentTask(int score);
+        bool ResetGame();
+        Dictionary<string, int> GetScores();
     }
 
 
@@ -51,6 +53,7 @@ namespace BlazorSignalRApp.Server
                 throw;
             }
         }
+
 
         public SpielTask GetNextTask()
         {
@@ -172,6 +175,20 @@ namespace BlazorSignalRApp.Server
             catch(Exception e)
             {
                 _logger.LogError(e, "ScoreCurrentTask");
+                throw;
+            }
+            return true;
+        }
+
+        public bool ResetGame()
+        {
+            try
+            {
+                _tasks.ForEach(t => { t.Player = null;t.Score = 0; }) ;
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, "ResetGame");
                 throw;
             }
             return true;
